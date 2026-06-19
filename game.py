@@ -1,18 +1,40 @@
 import random
 import time
+import colorama
+import os
+import shutil
 
 board = {'A1' : ' ', 'A2' : ' ', 'A3': ' ',
          'B1' : ' ', 'B2' : ' ', 'B3' : ' ',
          'C1' : ' ', 'C2' : ' ', 'C3' : ' '}
 
-def displayBoard(board):
-    print("    1   2   3")
+colorama.init()
+
+def displayBoard(board, highlight=None, color=None, message=None):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    termWidth = shutil.get_terminal_size().columns
+    boardWidth = 14
+    hPad = " " * ((termWidth - boardWidth) // 2)
+    
+    print(hPad + "    1   2   3")
     for row in 'ABC':
-        print("  -------------")
-        cells = f"| {board[row+'1']} | {board[row+'2']} | {board[row+'3']} |"
-        print(f"{row} {cells}")
+        print(hPad + "  -------------")
+        cells = ""
+        for col in '123':
+            tile = row + col
+            char = board[tile]
+            if highlight and tile in highlight:
+                cells += f"| {color}{char}{colorama.Style.RESET_ALL} "
+            else:
+                cells += f"| {char} "
+        cells += "|"
+        print(f"{hPad}{row} {cells}")
         if row == 'C':
-            print("  -------------")
+            print(hPad + "  -------------")
+    
+    if message:
+        print("\n"+ message)
 
 def chooseLevel():
     while True:
@@ -24,7 +46,7 @@ def chooseLevel():
             return int(lvl)
     
 def userTurn(board, userChar):
-    print("your turn~")
+    print("\nyour turn~")
     while True:
         print(f"place your {userChar}")
         tile = input(">>> ").upper().strip()
@@ -52,12 +74,12 @@ def gameTurn(board, userChar, diff):
     print()
     gameChar = 'X' if userChar == 'O' else 'O'
 
-    if diff == 1:
+    if diff == 1: #easy mode
         empty_tiles = [i for i in board if board[i] == ' ']
         move = random.choice(empty_tiles)
         board[move] = gameChar
 
-    elif diff == 2:
+    elif diff == 2: #medium
         move = findWinningMove(board, gameChar)
         if not move:
             move = findWinningMove(board, userChar)
@@ -73,10 +95,7 @@ def gameTurn(board, userChar, diff):
         
         board[move] = gameChar
 
-    print(f"CPU chose {move}!")
-
-    
-    
+    return move
 
 winningPatterns = [['A1','A2','A3'], ['B1','B2','B3'], ['C1','C2','C3'],  # rows
                     ['A1','B1','C1'], ['A2','B2','C2'], ['A3','B3','C3'],  # cols
@@ -87,8 +106,8 @@ def winningCondition(board):
     for pattern in winningPatterns:
         vals = [board[tile] for tile in pattern]
         if vals[0] != ' ' and vals[0] == vals[1] == vals[2]:
-            return vals[0]
-    return False
+            return vals[0], pattern
+    return None, None
 
 def drawCondition(board):
     return all(board[tile] != ' ' for tile in board)
@@ -106,11 +125,9 @@ def playAgainPrompt():
         p = input("$ ").lower().strip()
         if p not in ['y','n']:
             print("Try again...")
-        else:
-            if p == 'y':
-                return True
-            else:
-                return False
+        elif p == 'y':
+            return True
+        return False
             
 def resetBoard(board):
     for x in board:
@@ -129,28 +146,33 @@ def gameloop(board, diff):
 
         #gameloop
         currentTurn = 'X'
+        lastMessage = None
         while True:
-            displayBoard(board)
+            displayBoard(board, message=lastMessage)
+            lastMessage = None
+
             if currentTurn == userChar:
                 userTurn(board, userChar)
             else:
-                gameTurn(board, userChar, diff)
+                move = gameTurn(board, userChar, diff)
+                lastMessage = f"CPU chose {move}!"
 
-            if winningCondition(board) == userChar:
-                displayBoard(board)
-                print("You win!! ;) ")
+            winner, pattern = winningCondition(board)
+            if winner == userChar:
+                displayBoard(board, highlight=pattern, color=colorama.Fore.GREEN)
+                print("\nYou win!! ;) ")
                 userScore += 1
                 break
 
-            elif winningCondition(board) == gameChar:
-                displayBoard(board)
-                print("You lose! :(")
+            elif winner == gameChar:
+                displayBoard(board, highlight=pattern, color=colorama.Fore.RED, message=f'CPU chose {move}!')
+                print("\nYou lose! :(")
                 gameScore += 1
                 break
             
             elif drawCondition(board):
                 displayBoard(board)
-                print("Draw! :/")
+                print("\nDraw! :/")
                 draws += 1
                 break
 
