@@ -34,7 +34,7 @@ def displayBoard(board, highlight=None, color=None, message=None):
             print(hPad + "  -------------")
     
     if message:
-        print("\n"+ message)
+        print(message)
 
 def chooseLevel():
     while True:
@@ -44,9 +44,12 @@ def chooseLevel():
             print("Try again!")
         else:
             return int(lvl)
+        
+class QuitGame(Exception):
+    pass
     
 def userTurn(board, userChar):
-    print("\nyour turn~")
+    print("your turn~")
     while True:
         print(f"place your {userChar}")
         tile = input(">>> ").upper().strip()
@@ -55,7 +58,7 @@ def userTurn(board, userChar):
             print("Are you sure you want to quit? (y/n) ")
             if input(">>> ").lower().strip() == 'y':
                 #return to main menu
-                break
+                raise QuitGame()
         if len(tile) != 2 or tile[0] not in ['A','B','C'] or tile[1] not in ['1','2','3']:
             print("Invalid. Try again")
         else:
@@ -71,7 +74,6 @@ def gameTurn(board, userChar, diff):
         time.sleep(0.5)
         print(".", end=' ', flush=True)
         time.sleep(0.2)
-    print()
     gameChar = 'X' if userChar == 'O' else 'O'
 
     if diff == 1: #easy mode
@@ -95,6 +97,10 @@ def gameTurn(board, userChar, diff):
         
         board[move] = gameChar
 
+    else:
+        #hard difficulty
+        pass
+    
     return move
 
 winningPatterns = [['A1','A2','A3'], ['B1','B2','B3'], ['C1','C2','C3'],  # rows
@@ -112,6 +118,7 @@ def winningCondition(board):
 def drawCondition(board):
     return all(board[tile] != ' ' for tile in board)
 
+#for medium difficulty
 def findWinningMove(board, char):
     for pattern in winningPatterns:
         vals = [board[tile] for tile in pattern]
@@ -139,55 +146,70 @@ def gameloop(board, diff):
     draws = 0
     userChar = 'X'
 
-    #session loop
-    while True:
-        gameChar = 'O' if userChar == 'X' else 'X'
-        resetBoard(board)
-
-        #gameloop
-        currentTurn = 'X'
-        lastMessage = None
+    try:
+        #session loop
         while True:
-            displayBoard(board, message=lastMessage)
-            lastMessage = None
+            gameChar = 'O' if userChar == 'X' else 'X'
+            resetBoard(board)
 
-            if currentTurn == userChar:
-                userTurn(board, userChar)
+            currentTurn = 'X' #1st loop config
+            lastMessage = None 
+
+            #gameloop
+            while True:
+                displayBoard(board, message=lastMessage)
+                lastMessage = None
+
+                if currentTurn == userChar:
+                    out = userTurn(board, userChar)
+                    if out == 'q':
+                        break
+
+                else:
+                    move = gameTurn(board, userChar, diff)
+                    lastMessage = f"CPU chose {move}!"
+
+                winner, pattern = winningCondition(board)
+                if winner == userChar:
+                    displayBoard(board, highlight=pattern, color=colorama.Fore.GREEN)
+                    print(f"\n{colorama.Fore.GREEN}You win!! ;){colorama.Style.RESET_ALL}")
+                    userScore += 1
+                    break
+
+                elif winner == gameChar:
+                    displayBoard(board, highlight=pattern, color=colorama.Fore.RED, message=f'CPU chose {move}!')
+                    print(f"\n{colorama.Fore.RED}You lose! :({colorama.Style.RESET_ALL}")
+                    gameScore += 1
+                    break
+                
+                elif drawCondition(board):
+                    displayBoard(board, highlight=board, color=colorama.Fore.YELLOW)
+                    print(f"\n{colorama.Fore.YELLOW}Draw! :/{colorama.Style.RESET_ALL}")
+                    draws += 1
+                    break
+
+                currentTurn = 'O' if currentTurn == 'X' else 'X' #one turn over, changing currentTurn char
+                
+            print(f"Score : You {userScore} | CPU {gameScore} | Draws {draws}")
+
+            if playAgainPrompt():
+                print("Loading", end='', flush=True)
+                for _ in range(3):
+                    time.sleep(0.5)
+                    print(".", end='', flush=True)
+                print()
+
+                userChar = 'O' if userChar == 'X' else 'X'
             else:
-                move = gameTurn(board, userChar, diff)
-                lastMessage = f"CPU chose {move}!"
-
-            winner, pattern = winningCondition(board)
-            if winner == userChar:
-                displayBoard(board, highlight=pattern, color=colorama.Fore.GREEN)
-                print("\nYou win!! ;) ")
-                userScore += 1
-                break
-
-            elif winner == gameChar:
-                displayBoard(board, highlight=pattern, color=colorama.Fore.RED, message=f'CPU chose {move}!')
-                print("\nYou lose! :(")
-                gameScore += 1
-                break
+                return userScore, gameScore, draws
             
-            elif drawCondition(board):
-                displayBoard(board)
-                print("\nDraw! :/")
-                draws += 1
-                break
-
-            currentTurn = 'O' if currentTurn == 'X' else 'X' #one turn over, changing currentTurn char
-            
-        print(f"Score : You {userScore} | CPU {gameScore} | Draws {draws}")
-
-        if playAgainPrompt():
-            print("Loading", end='', flush=True)
-            for _ in range(3):
-                time.sleep(0.5)
-                print(".", end='', flush=True)
-            print()
-            userChar = 'O' if userChar == 'X' else 'X'
-        else:
-            return userScore, gameScore, draws
+    except QuitGame:
+        return userScore, gameScore, draws
         
-gameloop(board, chooseLevel())
+
+#add hard difficulty
+#return scores to main scoreboard
+#return to main menu after q
+
+if __name__ == '__main__':
+    gameloop(board, chooseLevel())

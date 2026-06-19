@@ -10,6 +10,12 @@ def print_menu():
     print("'exit' to exit")
 
 def take_command():
-    c = input("$ ").lower().strip()
-    return c
+    while True:
+        c = input("$ ").lower().strip()
+        if c in ['start', 'score', 'reset', 'exit']:
+            return c
+        else:
+            print(f"{colorama.Fore.RED}{c} : The term '{c}' is not recognized as the name of a cmdlet function, script file, or operable program.{colorama.Style.RESET_ALL}")
 
+def start():
+    pass
