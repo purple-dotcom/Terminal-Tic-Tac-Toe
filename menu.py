@@ -1,21 +1,48 @@
 import pyfiglet
 import colorama
+from game import gameloop, chooseLevel, board
+from scores import *
+
+colorama.init()
+title = pyfiglet.figlet_format("TIC TAC TOE", font="doom")
 
 def print_menu():
-    print("----TIC TAC TOE----")
-    print(" type")
-    print("'start' to start the game")
-    print("'score' to show the scoreboard")
-    print("'reset' to reset the score")
-    print("'exit' to exit")
+    print(colorama.Fore.BLUE + title + colorama.Style.RESET_ALL)
+    print(" Type")
+    print("'start' - start game")
+    print("'score' - show scoreboard")
+    print("'reset' - reset score")
+    print("'exit'  - exit")
 
 def take_command():
     while True:
         c = input("$ ").lower().strip()
         if c in ['start', 'score', 'reset', 'exit']:
-            return c
+            if c == 'start':
+                start()
+            elif c == 'score':
+                displayScoreTable(buildScoreTable(loadScores()))
+            elif c == 'reset':
+                resetScores()
+            elif c == 'exit':
+                quit()
         else:
-            print(f"{colorama.Fore.RED}{c} : The term '{c}' is not recognized as the name of a cmdlet function, script file, or operable program.{colorama.Style.RESET_ALL}")
+            print(f"{colorama.Fore.RED}{c if c.strip() != '' else None} : The term '{c}' is not recognized as the name of a cmdlet function, script file, or operable program.{colorama.Style.RESET_ALL}")
 
 def start():
-    pass
+    diff = chooseLevel()
+    diffStr = {1:'easy', 2:'medium', 3:'hard'}[diff]
+    userScore, gameScore, draws = gameloop(board, diff)
+    for _ in range(userScore):
+        saveScores(diffStr, 'win')
+    for _ in range(gameScore):
+        saveScores(diffStr, 'loss')
+    for _ in range(draws):
+        saveScores(diffStr, 'draw')
+
+def quit():
+    raise SystemExit
+
+while True:
+    print_menu()
+    take_command()

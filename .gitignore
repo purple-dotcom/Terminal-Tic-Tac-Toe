@@ -1,3 +1,5 @@
 venv
 tempCode
 .vscode
+__pycache__
+scores.json

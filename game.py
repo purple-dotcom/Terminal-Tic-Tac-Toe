@@ -3,6 +3,7 @@ import time
 import colorama
 import os
 import shutil
+import json
 
 board = {'A1' : ' ', 'A2' : ' ', 'A3': ' ',
          'B1' : ' ', 'B2' : ' ', 'B3' : ' ',
@@ -43,6 +44,12 @@ def chooseLevel():
         if lvl.strip() not in ['1','2','3']:
             print("Try again!")
         else:
+            print(f"{colorama.Fore.LIGHTRED_EX}Press 'q' to quit{colorama.Style.RESET_ALL}")
+            print("Loading",end='',flush=True)
+            for _ in range(3):
+                time.sleep(0.7)
+                print('.', end = ' ', flush=True)
+            time.sleep(1)
             return int(lvl)
         
 class QuitGame(Exception):
@@ -55,10 +62,12 @@ def userTurn(board, userChar):
         tile = input(">>> ").upper().strip()
 
         if tile == 'Q':
-            print("Are you sure you want to quit? (y/n) ")
+            print("Are you sure you want to quit? (y/n)")
             if input(">>> ").lower().strip() == 'y':
-                #return to main menu
-                raise QuitGame()
+                raise QuitGame()    #return to main menu
+            else:
+                continue
+
         if len(tile) != 2 or tile[0] not in ['A','B','C'] or tile[1] not in ['1','2','3']:
             print("Invalid. Try again")
         else:
@@ -129,7 +138,7 @@ def findWinningMove(board, char):
 def playAgainPrompt():
     while True:
         print("Play again? (y/n)")
-        p = input("$ ").lower().strip()
+        p = input(">> ").lower().strip()
         if p not in ['y','n']:
             print("Try again...")
         elif p == 'y':
