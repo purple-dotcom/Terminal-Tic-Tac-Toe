@@ -40,12 +40,14 @@ def displayBoard(board, highlight=None, color=None, message=None):
 def chooseLevel():
     while True:
         print("Choose dificulty -> Easy (1) | Medium (2) | Hard (3) ")
-        lvl = input("$ ")
-        if lvl.strip() not in ['1','2','3']:
+        lvl = input("$ ").lower().strip()
+        if lvl == 'exit':
+            raise SystemExit
+        elif lvl.strip() not in ['1','2','3']:
             print("Try again!")
         else:
-            print(f"{colorama.Fore.LIGHTRED_EX}Press 'q' to quit{colorama.Style.RESET_ALL}")
-            print("Loading",end='',flush=True)
+            print(f"{colorama.Fore.LIGHTRED_EX} Press 'q' to quit and return to main menu {colorama.Style.RESET_ALL}")
+            print("Loading", end='', flush=True)
             for _ in range(3):
                 time.sleep(0.7)
                 print('.', end = ' ', flush=True)
@@ -63,7 +65,7 @@ def userTurn(board, userChar):
 
         if tile == 'Q':
             print("Are you sure you want to quit? (y/n)")
-            if input(">>> ").lower().strip() == 'y':
+            if input(">>> ").lower().strip() in ['y', 'yes']:
                 raise QuitGame()    #return to main menu
             else:
                 continue
@@ -85,12 +87,14 @@ def gameTurn(board, userChar, diff):
         time.sleep(0.2)
     gameChar = 'X' if userChar == 'O' else 'O'
 
-    if diff == 1: #easy mode
+    #easy
+    if diff == 1: 
         empty_tiles = [i for i in board if board[i] == ' ']
         move = random.choice(empty_tiles)
         board[move] = gameChar
 
-    elif diff == 2: #medium
+    #medium
+    elif diff == 2: 
         move = findWinningMove(board, gameChar)
         if not move:
             move = findWinningMove(board, userChar)
@@ -107,7 +111,7 @@ def gameTurn(board, userChar, diff):
         board[move] = gameChar
 
     else:
-        #hard difficulty
+        #hard
         pass
     
     return move
@@ -153,7 +157,7 @@ def gameloop(board, diff):
     userScore = 0
     gameScore = 0
     draws = 0
-    userChar = 'X'
+    userChar = 'X' # new gameloop config
 
     try:
         #session loop
@@ -170,9 +174,7 @@ def gameloop(board, diff):
                 lastMessage = None
 
                 if currentTurn == userChar:
-                    out = userTurn(board, userChar)
-                    if out == 'q':
-                        break
+                    userTurn(board, userChar)
 
                 else:
                     move = gameTurn(board, userChar, diff)

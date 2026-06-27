@@ -27,8 +27,11 @@ def take_command():
             elif c == 'exit':
                 quit()
         else:
-            print(f"{colorama.Fore.RED}{c if c.strip() != '' else None} : The term '{c}' is not recognized as the name of a cmdlet function, script file, or operable program.{colorama.Style.RESET_ALL}")
-
+            if c.strip() == '':
+                print(f"{colorama.Fore.RED}Try again{colorama.Style.RESET_ALL}")
+            else:
+                print(f"{colorama.Fore.RED}The term '{c}' is not recognized as the name of a cmdlet function, script file, or operable program.{colorama.Style.RESET_ALL}")
+            
 def start():
     diff = chooseLevel()
     diffStr = {1:'easy', 2:'medium', 3:'hard'}[diff]
