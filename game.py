@@ -39,7 +39,7 @@ def displayBoard(board, highlight=None, color=None, message=None):
 def chooseLevel():
     while True:
         print("Choose dificulty -> Easy (1) | Medium (2) | Hard (3) ")
-        lvl = input("$ ").lower().strip()
+        lvl = input("$$ ").lower().strip()
         if lvl == 'exit':
             raise SystemExit
         elif lvl.strip() not in ['1','2','3']:
@@ -63,6 +63,8 @@ def userTurn(board, userChar):
             print("Are you sure you want to quit? (y/n)")
             if input(">>> ").lower().strip() in ['y', 'yes']:
                 return 'q'
+            else:
+                continue
 
         if len(tile) != 2 or tile[0] not in ['A','B','C'] or tile[1] not in ['1','2','3']:
             print("Invalid. Try again")
@@ -135,7 +137,7 @@ def playAgainPrompt():
     while True:
         print("Play again? (y/n)")
         p = input(">> ").lower().strip()
-        if p not in ['y','n']:
+        if p not in ('y','n'):
             print("Try again...")
         elif p == 'y':
             return True

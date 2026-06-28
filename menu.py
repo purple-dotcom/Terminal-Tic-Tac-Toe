@@ -7,6 +7,7 @@ colorama.init()
 title = pyfiglet.figlet_format("TIC TAC TOE", font="doom")
 
 def print_menu():
+    os.system('cls' if os.name == 'nt' else 'clear')
     print(colorama.Fore.BLUE + title + colorama.Style.RESET_ALL)
     print(" Type")
     print("'start' - start game")
@@ -20,12 +21,23 @@ def take_command():
         if c in ['start', 'score', 'reset', 'exit']:
             if c == 'start':
                 start()
+
             elif c == 'score':
-                displayScoreTable(buildScoreTable(loadScores()))
+                displayScoreTable()
+
             elif c == 'reset':
-                resetScores()
+                print("Are you sure? (y/n)")
+                if input("$$ ").strip().lower() in ('y', 'yes'):
+                    resetScores()
+                else:
+                    print_menu()
+                    continue
+
             elif c == 'exit':
-                quit()
+                raise SystemExit
+            
+            break
+
         else:
             if c.strip() == '':
                 print(f"{colorama.Fore.RED}Try again{colorama.Style.RESET_ALL}")
@@ -43,12 +55,7 @@ def start():
     for _ in range(draws):
         saveScores(diffVerbose, 'draw')
 
-def quit():
-    raise SystemExit
-
-def resetScores():
-    pass
-
-while True:
-    print_menu()
-    take_command()
+if __name__ == '__main__':
+    while True:
+        print_menu()
+        take_command()
