@@ -34,17 +34,20 @@ def take_command():
             
 def start():
     diff = chooseLevel()
-    diffStr = {1:'easy', 2:'medium', 3:'hard'}[diff]
+    diffVerbose = {1:'easy', 2:'medium', 3:'hard'}[diff]
     userScore, gameScore, draws = gameloop(board, diff)
     for _ in range(userScore):
-        saveScores(diffStr, 'win')
+        saveScores(diffVerbose, 'win')
     for _ in range(gameScore):
-        saveScores(diffStr, 'loss')
+        saveScores(diffVerbose, 'loss')
     for _ in range(draws):
-        saveScores(diffStr, 'draw')
+        saveScores(diffVerbose, 'draw')
 
 def quit():
     raise SystemExit
+
+def resetScores():
+    pass
 
 while True:
     print_menu()

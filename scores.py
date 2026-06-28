@@ -34,7 +34,6 @@ def buildScoreTable(scores):
     return table
 
 def displayScoreTable(table):
-
     pass
 
 def resetScores():

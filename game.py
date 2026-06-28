@@ -3,7 +3,6 @@ import time
 import colorama
 import os
 import shutil
-import json
 
 board = {'A1' : ' ', 'A2' : ' ', 'A3': ' ',
          'B1' : ' ', 'B2' : ' ', 'B3' : ' ',
@@ -53,9 +52,6 @@ def chooseLevel():
                 print('.', end = ' ', flush=True)
             time.sleep(1)
             return int(lvl)
-        
-class QuitGame(Exception):
-    pass
     
 def userTurn(board, userChar):
     print("your turn~")
@@ -66,9 +62,7 @@ def userTurn(board, userChar):
         if tile == 'Q':
             print("Are you sure you want to quit? (y/n)")
             if input(">>> ").lower().strip() in ['y', 'yes']:
-                raise QuitGame()    #return to main menu
-            else:
-                continue
+                return 'q'
 
         if len(tile) != 2 or tile[0] not in ['A','B','C'] or tile[1] not in ['1','2','3']:
             print("Invalid. Try again")
@@ -84,14 +78,13 @@ def gameTurn(board, userChar, diff):
     for _ in range(3):
         time.sleep(0.5)
         print(".", end=' ', flush=True)
-        time.sleep(0.2)
+        time.sleep(0.5)
     gameChar = 'X' if userChar == 'O' else 'O'
 
     #easy
     if diff == 1: 
         empty_tiles = [i for i in board if board[i] == ' ']
         move = random.choice(empty_tiles)
-        board[move] = gameChar
 
     #medium
     elif diff == 2: 
@@ -107,13 +100,12 @@ def gameTurn(board, userChar, diff):
         if not move:
             empty = [t for t in board if board[t] == ' ']
             move = random.choice(empty)
-        
-        board[move] = gameChar
-
+    
     else:
         #hard
         pass
     
+    board[move] = gameChar
     return move
 
 winningPatterns = [['A1','A2','A3'], ['B1','B2','B3'], ['C1','C2','C3'],  # rows
@@ -159,64 +151,63 @@ def gameloop(board, diff):
     draws = 0
     userChar = 'X' # new gameloop config
 
-    try:
-        #session loop
+    
+    #session loop
+    while True:
+        gameChar = 'O' if userChar == 'X' else 'X'
+        resetBoard(board)
+
+        currentTurn = 'X' #1st loop config
+        lastMessage = None 
+
+        #gameloop
         while True:
-            gameChar = 'O' if userChar == 'X' else 'X'
-            resetBoard(board)
+            displayBoard(board, message=lastMessage)
+            lastMessage = None
 
-            currentTurn = 'X' #1st loop config
-            lastMessage = None 
+            if currentTurn == userChar:
+                n = userTurn(board, userChar)
+                if n == 'q':
+                    return userScore, gameScore, draws
 
-            #gameloop
-            while True:
-                displayBoard(board, message=lastMessage)
-                lastMessage = None
-
-                if currentTurn == userChar:
-                    userTurn(board, userChar)
-
-                else:
-                    move = gameTurn(board, userChar, diff)
-                    lastMessage = f"CPU chose {move}!"
-
-                winner, pattern = winningCondition(board)
-                if winner == userChar:
-                    displayBoard(board, highlight=pattern, color=colorama.Fore.GREEN)
-                    print(f"\n{colorama.Fore.GREEN}You win!! ;){colorama.Style.RESET_ALL}")
-                    userScore += 1
-                    break
-
-                elif winner == gameChar:
-                    displayBoard(board, highlight=pattern, color=colorama.Fore.RED, message=f'CPU chose {move}!')
-                    print(f"\n{colorama.Fore.RED}You lose! :({colorama.Style.RESET_ALL}")
-                    gameScore += 1
-                    break
-                
-                elif drawCondition(board):
-                    displayBoard(board, highlight=board, color=colorama.Fore.YELLOW)
-                    print(f"\n{colorama.Fore.YELLOW}Draw! :/{colorama.Style.RESET_ALL}")
-                    draws += 1
-                    break
-
-                currentTurn = 'O' if currentTurn == 'X' else 'X' #one turn over, changing currentTurn char
-                
-            print(f"Score : You {userScore} | CPU {gameScore} | Draws {draws}")
-
-            if playAgainPrompt():
-                print("Loading", end='', flush=True)
-                for _ in range(3):
-                    time.sleep(0.5)
-                    print(".", end='', flush=True)
-                print()
-
-                userChar = 'O' if userChar == 'X' else 'X'
             else:
-                return userScore, gameScore, draws
+                move = gameTurn(board, userChar, diff)
+                lastMessage = f"CPU chose {move}!"
+
+            winner, pattern = winningCondition(board)
+            if winner == userChar:
+                displayBoard(board, highlight=pattern, color=colorama.Fore.GREEN)
+                print(f"\n{colorama.Fore.GREEN}You win!! ;){colorama.Style.RESET_ALL}")
+                userScore += 1
+                break
+
+            elif winner == gameChar:
+                displayBoard(board, highlight=pattern, color=colorama.Fore.RED, message=f'CPU chose {move}!')
+                print(f"\n{colorama.Fore.RED}You lose! :({colorama.Style.RESET_ALL}")
+                gameScore += 1
+                break
+                
+            elif drawCondition(board):
+                displayBoard(board, highlight=board, color=colorama.Fore.YELLOW)
+                print(f"\n{colorama.Fore.YELLOW}Draw! :/{colorama.Style.RESET_ALL}")
+                draws += 1
+                break
+
+            currentTurn = 'O' if currentTurn == 'X' else 'X' #one turn over, changing currentTurn char
+                
+        print(f"Score : You {userScore} | CPU {gameScore} | Draws {draws}")
+
+        if playAgainPrompt():
+            print("Loading", end='', flush=True)
+            for _ in range(3):
+                time.sleep(0.5)
+                print(".", end='', flush=True)
+            print()
+            userChar = 'O' if userChar == 'X' else 'X'
+
+        else:
+            return userScore, gameScore, draws
             
-    except QuitGame:
-        return userScore, gameScore, draws
-        
 
 #add hard difficulty
 #return scores to main scoreboard
