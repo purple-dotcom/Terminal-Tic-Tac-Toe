@@ -83,12 +83,12 @@ def gameTurn(board, userChar, diff):
         time.sleep(0.5)
     gameChar = 'X' if userChar == 'O' else 'O'
 
-    #easy
+    # easy
     if diff == 1: 
         empty_tiles = [i for i in board if board[i] == ' ']
         move = random.choice(empty_tiles)
 
-    #medium
+    # medium
     elif diff == 2: 
         move = findWinningMove(board, gameChar)
         if not move:
@@ -103,10 +103,50 @@ def gameTurn(board, userChar, diff):
             empty = [t for t in board if board[t] == ' ']
             move = random.choice(empty)
     
+    # hard
     else:
-        #hard
-        pass
-    
+        def minimax(board, isMaximizing, gameChar, userChar):
+            winner, _ = winningCondition(board)
+            if winner == gameChar:
+                return 1
+            if winner == userChar:
+                return -1
+            if drawCondition(board):
+                return 0
+
+            empty = [t for t in board if board[t] == ' ']
+
+            if isMaximizing:
+                bestScore = -float('inf')
+                for tile in empty:
+                    board[tile] = gameChar
+                    score = minimax(board, False, gameChar, userChar)
+                    board[tile] = ' '
+                    bestScore = max(score, bestScore)
+                return bestScore
+            else:
+                bestScore = float('inf')
+                for tile in empty:
+                    board[tile] = userChar
+                    score = minimax(board, True, gameChar, userChar)
+                    board[tile] = ' '
+                    bestScore = min(score, bestScore)
+                return bestScore
+
+        def bestMove(board, gameChar, userChar):
+            bestScore = -float('inf')
+            move = None
+            for tile in [t for t in board if board[t] == ' ']:
+                board[tile] = gameChar
+                score = minimax(board, False, gameChar, userChar)
+                board[tile] = ' '
+                if score > bestScore:
+                    bestScore = score
+                    move = tile
+            return move
+        
+        move = bestMove(board, gameChar, userChar)
+        
     board[move] = gameChar
     return move
 
@@ -153,16 +193,15 @@ def gameloop(board, diff):
     draws = 0
     userChar = 'X' # new gameloop config
 
-    
-    #session loop
+    # session loop
     while True:
         gameChar = 'O' if userChar == 'X' else 'X'
         resetBoard(board)
 
-        currentTurn = 'X' #1st loop config
+        currentTurn = 'X' # 1st loop config
         lastMessage = None 
 
-        #gameloop
+        # gameloop
         while True:
             displayBoard(board, message=lastMessage)
             lastMessage = None
@@ -177,6 +216,7 @@ def gameloop(board, diff):
                 lastMessage = f"CPU chose {move}!"
 
             winner, pattern = winningCondition(board)
+
             if winner == userChar:
                 displayBoard(board, highlight=pattern, color=colorama.Fore.GREEN)
                 print(f"\n{colorama.Fore.GREEN}You win!! ;){colorama.Style.RESET_ALL}")
@@ -195,7 +235,7 @@ def gameloop(board, diff):
                 draws += 1
                 break
 
-            currentTurn = 'O' if currentTurn == 'X' else 'X' #one turn over, changing currentTurn char
+            currentTurn = 'O' if currentTurn == 'X' else 'X' # one turn over, changing currentTurn char
                 
         print(f"Score : You {userScore} | CPU {gameScore} | Draws {draws}")
 
@@ -209,11 +249,7 @@ def gameloop(board, diff):
 
         else:
             return userScore, gameScore, draws
-            
-
-#add hard difficulty
-#return scores to main scoreboard
-#return to main menu after q
+        
 
 if __name__ == '__main__':
     gameloop(board, chooseLevel())

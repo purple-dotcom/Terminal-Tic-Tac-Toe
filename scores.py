@@ -25,13 +25,16 @@ def saveScores(difficulty, result):
         json.dump(scores, f, indent=2)  # rewrites scores.json
 
 def buildScoreTable(scores):
-    table = defaultdict(lambda: {'easy': [0,0], 'medium': [0,0], 'hard': [0,0]})
+    table = defaultdict(lambda: {'easy': [0,0,0], 'medium': [0,0,0], 'hard': [0,0,0]})
     for match in scores:
         d = match['date']
         diff = match['difficulty']
-        table[d][diff][1] += 1          # played
         if match['result'] == 'win':
-            table[d][diff][0] += 1      # won
+            table[d][diff][0] += 1
+        elif match['result'] == 'loss':
+            table[d][diff][1] += 1
+        elif match['result'] == 'draw':
+            table[d][diff][2] += 1
     return table
 
 def displayScoreTable():
@@ -42,14 +45,16 @@ def displayScoreTable():
     table = buildScoreTable(scores)
 
     col = 12
+
+    print(f"\n{colorama.Fore.GREEN}(w/l/d){colorama.Style.RESET_ALL}")
     print(f"\n{'Date':<12} {'Easy':^{col}} {'Medium':^{col}} {'Hard':^{col}}")
     print("-" * (12 + col * 3 + 3))
 
     for d in sorted(table.keys(), reverse=True):
         row = table[d]
-        easy   = f"{row['easy'][0]}/{row['easy'][1]}"
-        medium = f"{row['medium'][0]}/{row['medium'][1]}"
-        hard   = f"{row['hard'][0]}/{row['hard'][1]}"
+        easy   = f"{row['easy'][0]}/{row['easy'][1]}/{row['easy'][2]}"
+        medium = f"{row['medium'][0]}/{row['medium'][1]}/{row['medium'][2]}"
+        hard   = f"{row['hard'][0]}/{row['hard'][1]}/{row['hard'][2]}"
         print(f"{d:<12} {easy:^{col}} {medium:^{col}} {hard:^{col}}")
 
     print(f"{colorama.Fore.GREEN}\nPress Enter to return to menu... {colorama.Style.RESET_ALL}")
