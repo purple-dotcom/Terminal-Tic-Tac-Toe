@@ -45,7 +45,7 @@ def chooseLevel():
         elif lvl.strip() not in ['1','2','3']:
             print("Try again!")
         else:
-            print(f"{colorama.Fore.LIGHTRED_EX} Press 'q' to quit and return to main menu {colorama.Style.RESET_ALL}")
+            
             print("Loading", end='', flush=True)
             for _ in range(3):
                 time.sleep(0.7)
@@ -54,6 +54,7 @@ def chooseLevel():
             return int(lvl)
     
 def userTurn(board, userChar):
+    print(f"{colorama.Fore.LIGHTRED_EX} Press 'q' to quit and return to main menu {colorama.Style.RESET_ALL}")
     print("your turn~")
     while True:
         print(f"place your {userChar}")

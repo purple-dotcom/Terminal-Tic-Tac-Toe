@@ -6,7 +6,7 @@ import colorama
 
 colorama.init()
 
-SCORE_FILE = 'scores.json'
+SCORE_FILE = './scores.json'
 
 def loadScores():
     if not os.path.exists(SCORE_FILE):
