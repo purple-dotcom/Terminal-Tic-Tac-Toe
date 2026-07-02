@@ -137,7 +137,7 @@ def gameTurn(board, userChar, diff):
         def bestMove(board, gameChar, userChar):
             bestScore = -float('inf')
             move = None
-            for tile in [t for t in board if board[t] == ' ']:
+            for tile in empty:
                 board[tile] = gameChar
                 score = minimax(board, False, gameChar, userChar)
                 board[tile] = ' '
